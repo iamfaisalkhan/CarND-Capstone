@@ -44,9 +44,7 @@ class WaypointUpdater(object):
         self.MAX_JERK = rospy.get_param('~MAX_JERK', 10) # m s^-3
         self.RATE = rospy.get_param('~RATE', 20) # Hertz
 
-        self.current_pose = {'position': {'x': 0, 'y': 0, 'z': 0}, \
-                             'orientation': {'x': 0, 'y': 0, 'z': 0, 'w': 0}}
-
+        self.current_pose = []
         self.base_waypoints = []
         self.final_waypoints = []
         self.closest_waypoint_index = []
@@ -54,7 +52,7 @@ class WaypointUpdater(object):
         rospy.spin()
 
     def publish(self):
-        #Publisher for final_waypoints
+        # Publisher for final_waypoints
         lane = Lane()
         lane.header.frame_id = '/world'
         lane.header.stamp = rospy.Time(0)
@@ -63,14 +61,7 @@ class WaypointUpdater(object):
 
     def pose_cb(self, msg):
         # TODO: Implement
-        self.current_pose['position']['x'] = msg.pose.position.x
-        self.current_pose['position']['y'] = msg.pose.position.y
-        self.current_pose['position']['z'] = msg.pose.position.z
-
-        self.current_pose['orientation']['x'] = msg.pose.orientation.x
-        self.current_pose['orientation']['y'] = msg.pose.orientation.y
-        self.current_pose['orientation']['z'] = msg.pose.orientation.z
-        self.current_pose['orientation']['w'] = msg.pose.orientation.w
+        self.current_pose = msg.pose
 
         # Process waypoints here
         # Step 1: Identify waypoint closest to vehicle, but in front of the vehicle
@@ -78,7 +69,7 @@ class WaypointUpdater(object):
 
         # Step 2: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
         end_idx = min(self.closest_waypoint_index + self.LOOKAHEAD_WPS - 1, len(self.base_waypoints))
-        waypoints_list = self.base_waypoints[self.closest_waypoint_index: end_idx]
+        waypoints_list = self.base_waypoints[self.closest_waypoint_index : end_idx]
 
         # Step 3: Process waypoints (TBD when traffic light detection is available)
 
@@ -88,22 +79,24 @@ class WaypointUpdater(object):
         pass
 
     def get_closest_waypoint_front(self, current_pose, waypoints):
-        current_pose_position_x = current_pose['position']['x']
-        current_pose_position_y = current_pose['position']['y']
+        current_pose_position_x = current_pose.position.x
+        current_pose_position_y = current_pose.position.y
 
-        min_distance = 99999999999999999.0
-        min_ctr = 0
-
-        #TBD: We need to make sure we get only those waypoints that are ahead of the car.
-        #Also, can this be made more efficient?
-        for ctr in range(len(waypoints)):
+        #Obtain waypoints that are ahead of the car
+        ctr = self.closest_waypoint_index
+        min_ctr = ctr
+        prev_distance = 99999999999999999.0
+        while ctr < len(waypoints):
             waypoint_position_x = waypoints[ctr].pose.pose.position.x
             waypoint_position_y = waypoints[ctr].pose.pose.position.y
             thisDistance = math.sqrt((waypoint_position_x - current_pose_position_x)**2 + \
                                      (waypoint_position_y - current_pose_position_y)**2)
-            if thisDistance < min_distance:
-                min_distance = thisDistance
-                min_ctr = ctr
+            if thisDistance > prev_distance:
+                #i.e. Inflection point
+                min_ctr = max(ctr - 1, 0)
+                break
+            prev_distance = thisDistance
+            ctr += 1
 
         return min_ctr
 
