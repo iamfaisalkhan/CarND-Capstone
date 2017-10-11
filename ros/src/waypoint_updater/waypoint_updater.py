@@ -44,10 +44,10 @@ class WaypointUpdater(object):
         self.MAX_JERK = rospy.get_param('~MAX_JERK', 10) # m s^-3
         self.RATE = rospy.get_param('~RATE', 20) # Hertz
 
-        self.current_pose = []
+        self.current_pose = 0
         self.base_waypoints = []
         self.final_waypoints = []
-        self.closest_waypoint_index = []
+        self.closest_waypoint_index = 0
 
         rospy.spin()
 
