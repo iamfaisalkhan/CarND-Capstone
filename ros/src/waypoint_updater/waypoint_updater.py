@@ -4,6 +4,8 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
 
+from std_msgs.msg import Int32
+
 import math
 
 '''
@@ -21,35 +23,94 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-
-
 class WaypointUpdater(object):
     def __init__(self):
         rospy.init_node('waypoint_updater')
 
-        rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
-        rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        self.current_pose_sub = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
+        self.base_waypoints_sub = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
-
-
+        self.traffic_waypoint_sub = rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
+        #self.obstacle_waypoint_sub = rospy.Subscriber('/obstacle_waypoint', <MessageType>, self.obstacle_cb)
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
         # TODO: Add other member variables you need below
+        self.LOOKAHEAD_WPS = rospy.get_param('~LOOKAHEAD_WPS', 200)
+        self.MAX_SPEED_LIMIT = rospy.get_param('~MAX_SPEED_LIMIT', 8) # meters per second
+        self.MAX_ACCELERATION = rospy.get_param('~MAX_ACCELERATION', 9) # m s^-2
+        self.MIN_ACCELERATION = rospy.get_param('~MIN_ACCELERATION', -9) # m s^-2
+        self.MAX_JERK = rospy.get_param('~MAX_JERK', 10) # m s^-3
+        self.RATE = rospy.get_param('~RATE', 20) # Hertz
+
+        self.current_pose = {'position': {'x': 0, 'y': 0, 'z': 0}, \
+                             'orientation': {'x': 0, 'y': 0, 'z': 0, 'w': 0}}
+
+        self.base_waypoints = []
+        self.final_waypoints = []
+        self.closest_waypoint_index = []
 
         rospy.spin()
 
+    def publish(self):
+        #Publisher for final_waypoints
+        lane = Lane()
+        lane.header.frame_id = '/world'
+        lane.header.stamp = rospy.Time(0)
+        lane.waypoints = self.final_waypoints
+        self.final_waypoints_pub.publish(lane)
+
     def pose_cb(self, msg):
         # TODO: Implement
+        self.current_pose['position']['x'] = msg.pose.position.x
+        self.current_pose['position']['y'] = msg.pose.position.y
+        self.current_pose['position']['z'] = msg.pose.position.z
+
+        self.current_pose['orientation']['x'] = msg.pose.orientation.x
+        self.current_pose['orientation']['y'] = msg.pose.orientation.y
+        self.current_pose['orientation']['z'] = msg.pose.orientation.z
+        self.current_pose['orientation']['w'] = msg.pose.orientation.w
+
+        # Process waypoints here
+        # Step 1: Identify waypoint closest to vehicle, but in front of the vehicle
+        self.closest_waypoint_index = self.get_closest_waypoint_front(self.current_pose, self.base_waypoints)
+
+        # Step 2: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
+        end_idx = min(self.closest_waypoint_index + self.LOOKAHEAD_WPS - 1, len(self.base_waypoints))
+        waypoints_list = self.base_waypoints[self.closest_waypoint_index: end_idx]
+
+        # Step 3: Process waypoints (TBD when traffic light detection is available)
+
+        # Step 4: Publish waypoints
+        self.final_waypoints = waypoints_list
+        self.publish()
         pass
+
+    def get_closest_waypoint_front(self, current_pose, waypoints):
+        current_pose_position_x = current_pose['position']['x']
+        current_pose_position_y = current_pose['position']['y']
+
+        min_distance = 99999999999999999.0
+        min_ctr = 0
+
+        #TBD: We need to make sure we get only those waypoints that are ahead of the car.
+        #Also, can this be made more efficient?
+        for ctr in range(len(waypoints)):
+            waypoint_position_x = waypoints[ctr].pose.pose.position.x
+            waypoint_position_y = waypoints[ctr].pose.pose.position.y
+            thisDistance = math.sqrt((waypoint_position_x - current_pose_position_x)**2 + \
+                                     (waypoint_position_y - current_pose_position_y)**2)
+            if thisDistance < min_distance:
+                min_distance = thisDistance
+                min_ctr = ctr
+
+        return min_ctr
 
     def waypoints_cb(self, waypoints):
         # TODO: Implement
-
-        for waypoint in waypoints.waypoints:
-            rospy.loginfo(waypoint.pose.pose.position)
+        self.base_waypoints = waypoints.waypoints
+        pass
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
