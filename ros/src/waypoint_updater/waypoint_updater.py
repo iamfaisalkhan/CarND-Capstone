@@ -38,7 +38,7 @@ class WaypointUpdater(object):
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
         # TODO: Add other member variables you need below
-        self.LOOKAHEAD_WPS = rospy.get_param('~LOOKAHEAD_WPS', 200)
+        self.LOOKAHEAD_WPS = rospy.get_param('~LOOKAHEAD_WPS', 100)
         self.MAX_SPEED_LIMIT = rospy.get_param('~MAX_SPEED_LIMIT', 8) # meters per second
         self.MAX_ACCELERATION = rospy.get_param('~MAX_ACCELERATION', 9) # m s^-2
         self.MIN_ACCELERATION = rospy.get_param('~MIN_ACCELERATION', -9) # m s^-2
@@ -63,6 +63,11 @@ class WaypointUpdater(object):
         lane.header.frame_id = '/world'
         lane.header.stamp = rospy.Time(0)
         lane.waypoints = self.final_waypoints
+
+
+
+
+
         self.final_waypoints_pub.publish(lane)
 
     def pose_cb(self, msg):
