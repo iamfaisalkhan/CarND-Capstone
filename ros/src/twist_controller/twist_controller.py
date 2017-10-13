@@ -37,9 +37,10 @@ class Controller(object):
 
         proposed_linear = twist_cmd_msg.twist.linear.x
         proposed_angular = twist_cmd_msg.twist.angular.z
-
         cur_linear = current_velocity_msg.twist.linear.x
         #cur_angular = current_velocity_msg.twist.angular.z
+
+        print(proposed_linear, proposed_angular, cur_linear)
 
         linear_error = (proposed_linear - cur_linear) * ONE_MPH
 
