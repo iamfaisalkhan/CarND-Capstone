@@ -1,10 +1,4 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="waypoint_updater" type="waypoint_updater.py" name="waypoint_updater" />
-    <rosparam>
-        LOOKAHEAD_WPS: 200
-        MAX_ACCELERATION: 10
-        MIN_ACCELERATION: -10
-        MAX_JERK: 10
-    </rosparam>
 </launch>
