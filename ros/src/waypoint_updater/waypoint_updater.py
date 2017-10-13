@@ -24,9 +24,8 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 class WaypointUpdater(object):
-
     def __init__(self):
-        rospy.init_node('waypoint_updater', log_level=rospy.DEBUG)
+        rospy.init_node('waypoint_updater')
 
         self.current_pose_sub = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         self.base_waypoints_sub = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -38,24 +37,15 @@ class WaypointUpdater(object):
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
         # TODO: Add other member variables you need below
-        self.LOOKAHEAD_WPS = rospy.get_param('~LOOKAHEAD_WPS', 100)
-        self.MAX_SPEED_LIMIT = rospy.get_param('~MAX_SPEED_LIMIT', 8) # meters per second
-        self.MAX_ACCELERATION = rospy.get_param('~MAX_ACCELERATION', 9) # m s^-2
-        self.MIN_ACCELERATION = rospy.get_param('~MIN_ACCELERATION', -9) # m s^-2
-        self.MAX_JERK = rospy.get_param('~MAX_JERK', 10) # m s^-3
-        self.RATE = rospy.get_param('~RATE', 20) # Hertz
-
-        # SWH - logging of init & parms
-        rospy.loginfo("WaypointUpdater: init w/ max speed={}, max accel={}" \
-                      .format(self.MAX_SPEED_LIMIT,self.MAX_ACCELERATION))
-        print("***WaypointUpdater: init w/ max speed=", self.MAX_SPEED_LIMIT)
+        self.LOOKAHEAD_WPS = 200
+        self.MAX_ACCELERATION = 10.0 # m s^-2
+        self.MIN_ACCELERATION = -10.0 # m s^-2
+        self.MAX_JERK = 10.0 # m s^-3
 
         self.current_pose = 0
         self.base_waypoints = []
         self.final_waypoints = []
         self.closest_waypoint_index = 0
-
-        rospy.spin()
 
     def publish(self):
         # Publisher for final_waypoints
@@ -63,11 +53,6 @@ class WaypointUpdater(object):
         lane.header.frame_id = '/world'
         lane.header.stamp = rospy.Time(0)
         lane.waypoints = self.final_waypoints
-
-        print("***WaypointUpdater: publish, lane=", lane)
-
-
-
         self.final_waypoints_pub.publish(lane)
 
     def pose_cb(self, msg):
@@ -93,7 +78,9 @@ class WaypointUpdater(object):
         current_pose_position_x = current_pose.position.x
         current_pose_position_y = current_pose.position.y
 
-        #Obtain waypoints that are ahead of the car
+        #Obtain waypoints that are ahead of the car. This code makes the assumption
+        #that the starting position of the car is the same as the position specified
+        #in the first base_waypoint
         ctr = self.closest_waypoint_index
         min_ctr = ctr
         prev_distance = 99999999999999999.0
