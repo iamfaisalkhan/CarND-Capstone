@@ -97,7 +97,7 @@ class DBWNode(object):
             sample_time = cur_ts - prev_ts
             prev_ts = cur_ts
 
-            throttle, brake, steering = self.controller.control(self.dbw_enabled, self.twist_cmd_msg, self.current_velocity_msg, sample_time)
+            throttle, brake, steer = self.controller.control(self.dbw_enabled, self.twist_cmd_msg, self.current_velocity_msg, sample_time)
             if self.dbw_enabled:
                 self.publish(throttle, brake, steer)
             rate.sleep()

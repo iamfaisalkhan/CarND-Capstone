@@ -31,8 +31,7 @@ class Controller(object):
             self.params['wheel_base'], self.params['steer_ratio'], YAW_MIN_SPEED, self.params['max_lat_accel'], self.params['max_steer_angle'])
 
     def control(self, dbw_enabled, twist_cmd_msg, current_velocity_msg, sample_time):
-
-        if not dbw_enabled or not self.prev_ts:
+        if not dbw_enabled:
             self.pid.reset()
             return 0.0, 0.0, 0.0            
 
@@ -44,7 +43,7 @@ class Controller(object):
 
         linear_error = (proposed_linear - cur_linear) * ONE_MPH
 
-        throttle = self.pid.step(linear_error, sample_step)
+        throttle = self.pid.step(linear_error, sample_time)
         throttle = self.lpf.filt(throttle)
 
         brake = 0.0
