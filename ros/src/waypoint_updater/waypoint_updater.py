@@ -38,18 +38,14 @@ class WaypointUpdater(object):
 
         # TODO: Add other member variables you need below
         self.LOOKAHEAD_WPS = rospy.get_param('~LOOKAHEAD_WPS', 200)
-        self.MAX_SPEED_LIMIT = rospy.get_param('~MAX_SPEED_LIMIT', 8) # meters per second
-        self.MAX_ACCELERATION = rospy.get_param('~MAX_ACCELERATION', 9) # m s^-2
-        self.MIN_ACCELERATION = rospy.get_param('~MIN_ACCELERATION', -9) # m s^-2
+        self.MAX_ACCELERATION = rospy.get_param('~MAX_ACCELERATION', 10) # m s^-2
+        self.MIN_ACCELERATION = rospy.get_param('~MIN_ACCELERATION', -10) # m s^-2
         self.MAX_JERK = rospy.get_param('~MAX_JERK', 10) # m s^-3
-        self.RATE = rospy.get_param('~RATE', 20) # Hertz
 
         self.current_pose = 0
         self.base_waypoints = []
         self.final_waypoints = []
         self.closest_waypoint_index = 0
-
-        rospy.spin()
 
     def publish(self):
         # Publisher for final_waypoints
@@ -82,7 +78,9 @@ class WaypointUpdater(object):
         current_pose_position_x = current_pose.position.x
         current_pose_position_y = current_pose.position.y
 
-        #Obtain waypoints that are ahead of the car
+        #Obtain waypoints that are ahead of the car. This code makes the assumption
+        #that the starting position of the car is the same as the position specified
+        #in the first base_waypoint
         ctr = self.closest_waypoint_index
         min_ctr = ctr
         prev_distance = 99999999999999999.0
