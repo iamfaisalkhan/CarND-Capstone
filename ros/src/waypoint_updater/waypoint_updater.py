@@ -46,9 +46,9 @@ class WaypointUpdater(object):
         self.RATE = rospy.get_param('~RATE', 20) # Hertz
 
         # SWH - logging of init & parms
-        rospy.loginfo("WaypointUpdater init w/ max speed={}, max accel={}" \
+        rospy.loginfo("WaypointUpdater: init w/ max speed={}, max accel={}" \
                       .format(self.MAX_SPEED_LIMIT,self.MAX_ACCELERATION))
-        print("***WaypointUpdater init w/ max speed=", self.MAX_SPEED_LIMIT)
+        print("***WaypointUpdater: init w/ max speed=", self.MAX_SPEED_LIMIT)
 
         self.current_pose = 0
         self.base_waypoints = []
@@ -64,7 +64,7 @@ class WaypointUpdater(object):
         lane.header.stamp = rospy.Time(0)
         lane.waypoints = self.final_waypoints
 
-
+        print("***WaypointUpdater: publish, lane=", lane)
 
 
 
