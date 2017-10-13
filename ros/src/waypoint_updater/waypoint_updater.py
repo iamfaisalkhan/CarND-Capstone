@@ -24,8 +24,9 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 class WaypointUpdater(object):
+
     def __init__(self):
-        rospy.init_node('waypoint_updater')
+        rospy.init_node('waypoint_updater', log_level=rospy.DEBUG)
 
         self.current_pose_sub = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         self.base_waypoints_sub = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -43,6 +44,11 @@ class WaypointUpdater(object):
         self.MIN_ACCELERATION = rospy.get_param('~MIN_ACCELERATION', -9) # m s^-2
         self.MAX_JERK = rospy.get_param('~MAX_JERK', 10) # m s^-3
         self.RATE = rospy.get_param('~RATE', 20) # Hertz
+
+        # SWH - logging of init & parms
+        rospy.loginfo("WaypointUpdater init w/ max speed={}, max accel={}" \
+                      .format(self.MAX_SPEED_LIMIT,self.MAX_ACCELERATION))
+        print("***WaypointUpdater init w/ max speed=", self.MAX_SPEED_LIMIT)
 
         self.current_pose = 0
         self.base_waypoints = []
