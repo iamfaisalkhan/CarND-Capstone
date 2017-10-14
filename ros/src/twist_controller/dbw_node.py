@@ -116,7 +116,7 @@ class DBWNode(object):
             print(self.dbw_enabled, throttle, brake, steer)
             print("-------------------------------------")
             if self.dbw_enabled:
-                self.publish(1.0, 0.0, 0.0)
+                #self.publish(1.0, 0.0, 0.0)
                 self.publish(throttle, brake, steer)
             rate.sleep()
 
