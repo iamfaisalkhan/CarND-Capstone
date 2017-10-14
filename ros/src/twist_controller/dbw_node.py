@@ -72,6 +72,11 @@ class DBWNode(object):
         rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_hook, queue_size=1)
         rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_hook, queue_size=1)
 
+        '''
+        For Debugging
+        self.x = 0.0
+        self.d = 0
+        '''
         self.loop()
 
     def dbw_enabled_hook(self, msg):
@@ -79,7 +84,17 @@ class DBWNode(object):
 
     def twist_cmd_hook(self, msg):
         self.twist_cmd_msg = msg
-
+        '''
+        if self.d == 0:
+            self.x += 0.1
+            if self.x > 10:
+                self.d = 1
+        else:
+            self.x -= 0.1
+            if self.x <= 0:
+                self.d = 0
+        self.twist_cmd_msg.twist.linear.x = self.x
+        '''
     def current_velocity_hook(self, msg):
         self.current_velocity_msg = msg
 
@@ -99,6 +114,7 @@ class DBWNode(object):
 
             throttle, brake, steer = self.controller.control(self.dbw_enabled, self.twist_cmd_msg, self.current_velocity_msg, sample_time)
             print(self.dbw_enabled, throttle, brake, steer)
+            print("-------------------------------------")
             if self.dbw_enabled:
                 self.publish(1.0, 0.0, 0.0)
                 #self.publish(throttle, brake, steer)

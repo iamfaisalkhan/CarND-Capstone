@@ -47,10 +47,12 @@ class WaypointUpdater(object):
         self.final_waypoints = []
         self.closest_waypoint_index = 0
 
+        rospy.spin()
+
     def publish(self):
         # Publisher for final_waypoints
         lane = Lane()
-        lane.header.frame_id = '/world'
+        lane.header.frame_id = '/world2'
         lane.header.stamp = rospy.Time(0)
         lane.waypoints = self.final_waypoints
         self.final_waypoints_pub.publish(lane)
@@ -62,6 +64,7 @@ class WaypointUpdater(object):
         # Process waypoints here
         # Step 1: Identify waypoint closest to vehicle, but in front of the vehicle
         self.closest_waypoint_index = self.get_closest_waypoint_front(self.current_pose, self.base_waypoints)
+        rospy.loginfo("Identified closest waypoint index as " + str(self.closest_waypoint_index))
 
         # Step 2: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
         end_idx = min(self.closest_waypoint_index + self.LOOKAHEAD_WPS - 1, len(self.base_waypoints))
@@ -81,6 +84,18 @@ class WaypointUpdater(object):
         #Obtain waypoints that are ahead of the car. This code makes the assumption
         #that the starting position of the car is the same as the position specified
         #in the first base_waypoint
+        min_distance_sq = 9999999999999999.0
+        min_ctr = 0
+        for ctr in range(len(waypoints)):
+            waypoint_position_x = waypoints[ctr].pose.pose.position.x
+            waypoint_position_y = waypoints[ctr].pose.pose.position.y
+            thisDistance_sq = (waypoint_position_x - current_pose_position_x) ** 2 + \
+                              (waypoint_position_y - current_pose_position_y) ** 2
+            if thisDistance_sq < min_distance_sq:
+                min_distance_sq = thisDistance_sq
+                min_ctr = ctr
+
+        """
         ctr = self.closest_waypoint_index
         min_ctr = ctr
         prev_distance = 99999999999999999.0
@@ -95,7 +110,7 @@ class WaypointUpdater(object):
                 break
             prev_distance = thisDistance
             ctr += 1
-
+        """
         return min_ctr
 
     def waypoints_cb(self, waypoints):
