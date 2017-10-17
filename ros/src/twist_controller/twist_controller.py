@@ -7,12 +7,12 @@ GAS_DENSITY = 2.858
 ONE_MPH = 0.44704 # 1 mph ~ 0.44704 m/s
 
 #Pamaters to be tuned
-PID_KP = 3.0
+PID_KP = 1.0
 PID_KI = 0.001
 PID_KD = 0.2
 
 LPF_TAU = 0.1
-LPF_TS = 0.1
+LPF_TS = 0.2
 
 YAW_MIN_SPEED = 1.0
 
