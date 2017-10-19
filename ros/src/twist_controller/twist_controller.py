@@ -7,9 +7,9 @@ GAS_DENSITY = 2.858
 ONE_MPH = 0.44704 # 1 mph ~ 0.44704 m/s
 
 #Pamaters to be tuned
-PID_KP = 1.0
-PID_KI = 0.001
-PID_KD = 0.2
+PID_KP = 0.7
+PID_KI = 0.0007
+PID_KD = 0.1
 
 LPF_TAU = 0.1
 LPF_TS = 0.2
@@ -40,7 +40,7 @@ class Controller(object):
         cur_linear = current_velocity_msg.twist.linear.x
         #cur_angular = current_velocity_msg.twist.angular.z
 
-        linear_error = (proposed_linear - cur_linear) * ONE_MPH
+        linear_error = proposed_linear - cur_linear
 
         print(proposed_linear, proposed_angular, cur_linear, linear_error)
         print("linear_error", linear_error, "sample_time", sample_time);
