@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import numpy as np
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
 
@@ -91,8 +92,20 @@ class WaypointUpdater(object):
                     break
 
             #Utilizing a linear function for velocity reduction, with respect to distance
-            #This step will update self.base_waypoints
-            #TO BE CONTINUED
+            #This step will update self.base_waypoints, and utilizes numpy.interp
+            distance_input = []
+            for ctr in range(waypoint_to_start_deceleration, self.traffic_waypoint_index, 1):
+                distance_input.append(self.distance(self.base_waypoints, ctr, waypoint_to_start_deceleration))
+            distance_points = [0.0, self.distance(self.base_waypoints, waypoint_to_start_deceleration, self.traffic_waypoint_index)]
+            velocity_points = [self.base_waypoints[waypoint_to_start_deceleration].twist.twist.linear.x, 0.0]
+            velocity_output = np.interp(distance_input, distance_points, velocity_points).tolist()
+            for ctr in range(len(velocity_output)):
+                self.base_waypoints[waypoint_to_start_deceleration + ctr].twist.twist.linear.x = velocity_output[ctr]
+
+            #Setting a few forward waypoints to zero velocity as well, to ensure that the car stays at a complete stop
+            end_idx = min(len(self.base_waypoints), self.traffic_waypoint_index + 50)
+            for ctr in range(self.traffic_waypoint_index, end_idx):
+                self.base_waypoints[ctr].twist.twist.linear.x = 0.0
 
         # Step 3: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
         end_idx = min(self.closest_waypoint_index + self.LOOKAHEAD_WPS - 1, len(self.base_waypoints))
