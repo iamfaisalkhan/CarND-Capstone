@@ -99,7 +99,7 @@ class DBWNode(object):
         self.current_velocity_msg = msg
 
     def loop(self):
-        rate = rospy.Rate(50) # 50Hz
+        rate = rospy.Rate(20) # 50Hz SWH Change from 50 to 20
     
         prev_ts = None
         while not rospy.is_shutdown():
@@ -116,7 +116,7 @@ class DBWNode(object):
             print(self.dbw_enabled, throttle, brake, steer)
             print("-------------------------------------")
             if self.dbw_enabled:
-                #self.publish(1.0, 0.0, 0.0)
+                #self.publish(1.0, 0.0, 0.0) SWH Changed
                 self.publish(throttle, brake, steer)
             rate.sleep()
 
