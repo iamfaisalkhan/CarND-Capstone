@@ -41,11 +41,15 @@ class WaypointUpdater(object):
         self.MAX_ACCELERATION = 10.0 # m s^-2
         self.MIN_ACCELERATION = -10.0 # m s^-2
         self.MAX_JERK = 10.0 # m s^-3
+        self.PREFERRED_STOPPING_DISTANCE = 10.0 # meters
 
         self.current_pose = 0
         self.base_waypoints = []
         self.final_waypoints = []
         self.closest_waypoint_index = 0
+        self.traffic_waypoint_index = 2147483647
+
+        self._MAX_DISTANCE_ERROR = 0.0 # meters, maximum distance from the closest waypoint
 
         rospy.spin()
 
@@ -64,13 +68,35 @@ class WaypointUpdater(object):
         # Process waypoints here
         # Step 1: Identify waypoint closest to vehicle, but in front of the vehicle
         self.closest_waypoint_index = self.get_closest_waypoint_front(self.current_pose, self.base_waypoints)
-        rospy.loginfo("Identified closest waypoint index as " + str(self.closest_waypoint_index))
+        waypoint_position_x = self.base_waypoints[self.closest_waypoint_index].pose.pose.position.x
+        waypoint_position_y = self.base_waypoints[self.closest_waypoint_index].pose.pose.position.y
+        current_pose_position_x = self.current_pose.position.x
+        current_pose_position_y = self.current_pose.position.y
+        dist = math.sqrt((waypoint_position_x - current_pose_position_x)**2 + (waypoint_position_y - current_pose_position_y)**2)
+        if dist > self._MAX_DISTANCE_ERROR:
+            self._MAX_DISTANCE_ERROR = dist
+        rospy.loginfo("Maximum distance error: " + str(self._MAX_DISTANCE_ERROR) + " meters.")
 
-        # Step 2: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
+        # Step 2: Process waypoints (TBD when traffic light detection is available)
+        if self.traffic_waypoint_index < len(self.base_waypoints):
+            #Setting desired velocity value on the index
+            self.base_waypoints[self.traffic_waypoint_index].twist.twist.linear.x = 0.0
+
+            #Obtaining waypoint index for waypoint that is PREFERRED_STOPPING_DISTANCE away from the stopline
+            waypoint_to_start_deceleration = self.traffic_waypoint_index
+            for ctr in range(self.traffic_waypoint_index, 0, -1):
+                thisDistance = self.distance(self.base_waypoints, self.traffic_waypoint_index, ctr)
+                if thisDistance >= self.PREFERRED_STOPPING_DISTANCE:
+                    waypoint_to_start_deceleration = ctr
+                    break
+
+            #Utilizing a linear function for velocity reduction, with respect to distance
+            #This step will update self.base_waypoints
+            #TO BE CONTINUED
+
+        # Step 3: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
         end_idx = min(self.closest_waypoint_index + self.LOOKAHEAD_WPS - 1, len(self.base_waypoints))
         waypoints_list = self.base_waypoints[self.closest_waypoint_index : end_idx]
-
-        # Step 3: Process waypoints (TBD when traffic light detection is available)
 
         # Step 4: Publish waypoints
         self.final_waypoints = waypoints_list
@@ -120,6 +146,7 @@ class WaypointUpdater(object):
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
+        self.traffic_waypoint_index = msg
         pass
 
     def obstacle_cb(self, msg):
@@ -139,7 +166,6 @@ class WaypointUpdater(object):
             dist += dl(waypoints[wp1].pose.pose.position, waypoints[i].pose.pose.position)
             wp1 = i
         return dist
-
 
 if __name__ == '__main__':
     try:
