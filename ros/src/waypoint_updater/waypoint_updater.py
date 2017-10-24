@@ -86,7 +86,7 @@ class WaypointUpdater(object):
             #Obtaining waypoint index for waypoint that is PREFERRED_STOPPING_DISTANCE away from the stopline
             waypoint_to_start_deceleration = self.traffic_waypoint_index
             for ctr in range(self.traffic_waypoint_index, 0, -1):
-		waypoint_to_start_deceleration = ctr
+				waypoint_to_start_deceleration = ctr
                 thisDistance = self.distance(self.base_waypoints, self.traffic_waypoint_index, ctr)
                 if thisDistance >= self.PREFERRED_STOPPING_DISTANCE:
                     break
