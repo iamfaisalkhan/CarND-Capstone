@@ -46,7 +46,7 @@ class WaypointUpdater(object):
 
         self.current_pose = 0
         self.base_waypoints_original = []
-        self.base_waypoints = []
+		self.base_waypoints = []
         self.final_waypoints = []
         self.closest_waypoint_index = 0
         self.traffic_waypoint_index = 2147483647
@@ -82,7 +82,7 @@ class WaypointUpdater(object):
         # Step 2: Process waypoints (TBD when traffic light detection is available)
         if self.traffic_waypoint_index < len(self.base_waypoints_original):
             #Reset self.base_waypoints
-            self.base_waypoints = self.base_waypoints_original
+            self.base_waypoints = self.base_waypoints_original[:]
 
             #Setting desired velocity value on the index
             self.base_waypoints[self.traffic_waypoint_index].twist.twist.linear.x = 0.0
@@ -164,7 +164,6 @@ class WaypointUpdater(object):
     def waypoints_cb(self, waypoints):
         # TODO: Implement
         self.base_waypoints_original = waypoints.waypoints
-        self.base_waypoints = waypoints.waypoints
         pass
 
     def traffic_cb(self, msg):
