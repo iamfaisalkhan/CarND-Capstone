@@ -82,6 +82,7 @@ class WaypointUpdater(object):
 
         # Step 2: Process waypoints (TBD when traffic light detection is available)
         if self.traffic_waypoint_index < len(self.base_waypoints):
+            rospy.loginfo("Red light waypoint found")
             #Setting desired velocity value on the index
             self.base_waypoints[self.traffic_waypoint_index].twist.twist.linear.x = 0.0
 

@@ -42,6 +42,8 @@ class Controller(object):
 
         linear_error = proposed_linear - cur_linear
 
+        print ("Linear error ", linear_error)
+
         #print("proposed_linear", proposed_linear, "current_linear", cur_linear)
         #print("linear_error", linear_error, "sample_time", sample_time);
         throttle = self.pid.step(linear_error, sample_time)

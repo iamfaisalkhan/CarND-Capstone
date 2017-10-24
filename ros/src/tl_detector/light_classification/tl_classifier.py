@@ -53,7 +53,7 @@ class TLClassifier(object):
         ind = np.argmax(scores)
 
         if scores[ind] >= 0.5:
-            print (classes[ind])
+            rospy.loginfo("Light status = %d"%(self.clsmap[classes[ind]]))
             return self.clsmap[classes[ind]]
 
         return TrafficLight.UNKNOWN
