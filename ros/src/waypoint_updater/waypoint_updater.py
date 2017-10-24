@@ -80,10 +80,7 @@ class WaypointUpdater(object):
         rospy.loginfo("Maximum distance error: " + str(self._MAX_DISTANCE_ERROR) + " meters.")
 
         # Step 2: Process waypoints (TBD when traffic light detection is available)
-        if self.traffic_waypoint_index < len(self.base_waypoints_original):
-            #Reset self.base_waypoints
-            self.base_waypoints = self.base_waypoints_original[:]
-
+        if self.traffic_waypoint_index < len(self.base_waypoints):
             #Setting desired velocity value on the index
             self.base_waypoints[self.traffic_waypoint_index].twist.twist.linear.x = 0.0
 
@@ -163,7 +160,8 @@ class WaypointUpdater(object):
 
     def waypoints_cb(self, waypoints):
         # TODO: Implement
-        self.base_waypoints_original = waypoints.waypoints
+        self.base_waypoints_original = copy.deepcopy(waypoints.waypoints)
+        self.base_waypoints = waypoints.waypoints
         pass
 
     def traffic_cb(self, msg):
