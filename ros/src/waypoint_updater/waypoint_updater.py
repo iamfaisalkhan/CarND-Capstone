@@ -45,6 +45,7 @@ class WaypointUpdater(object):
         self.PREFERRED_STOPPING_DISTANCE = 10.0 # meters
 
         self.current_pose = 0
+        self.base_waypoints_original = []
         self.base_waypoints = []
         self.final_waypoints = []
         self.closest_waypoint_index = 0
@@ -68,9 +69,9 @@ class WaypointUpdater(object):
 
         # Process waypoints here
         # Step 1: Identify waypoint closest to vehicle, but in front of the vehicle
-        self.closest_waypoint_index = self.get_closest_waypoint_front(self.current_pose, self.base_waypoints)
-        waypoint_position_x = self.base_waypoints[self.closest_waypoint_index].pose.pose.position.x
-        waypoint_position_y = self.base_waypoints[self.closest_waypoint_index].pose.pose.position.y
+        self.closest_waypoint_index = self.get_closest_waypoint_front(self.current_pose, self.base_waypoints_original)
+        waypoint_position_x = self.base_waypoints_original[self.closest_waypoint_index].pose.pose.position.x
+        waypoint_position_y = self.base_waypoints_original[self.closest_waypoint_index].pose.pose.position.y
         current_pose_position_x = self.current_pose.position.x
         current_pose_position_y = self.current_pose.position.y
         dist = math.sqrt((waypoint_position_x - current_pose_position_x)**2 + (waypoint_position_y - current_pose_position_y)**2)
@@ -79,7 +80,10 @@ class WaypointUpdater(object):
         rospy.loginfo("Maximum distance error: " + str(self._MAX_DISTANCE_ERROR) + " meters.")
 
         # Step 2: Process waypoints (TBD when traffic light detection is available)
-        if self.traffic_waypoint_index < len(self.base_waypoints):
+        if self.traffic_waypoint_index < len(self.base_waypoints_original):
+            #Reset self.base_waypoints
+            self.base_waypoints = self.base_waypoints_original
+
             #Setting desired velocity value on the index
             self.base_waypoints[self.traffic_waypoint_index].twist.twist.linear.x = 0.0
 
@@ -107,13 +111,18 @@ class WaypointUpdater(object):
             for ctr in range(self.traffic_waypoint_index, end_idx):
                 self.base_waypoints[ctr].twist.twist.linear.x = 0.0
 
-        # Step 3: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
-        end_idx = min(self.closest_waypoint_index + self.LOOKAHEAD_WPS - 1, len(self.base_waypoints))
-        waypoints_list = self.base_waypoints[self.closest_waypoint_index : end_idx]
+            # Step 3: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
+            end_idx = min(self.closest_waypoint_index + self.LOOKAHEAD_WPS - 1, len(self.base_waypoints))
+            waypoints_list = self.base_waypoints[self.closest_waypoint_index : end_idx]
+        else:
+            # Step 3: Count LOOKAHEAD_WPS waypoints ahead of the vehicle.
+            end_idx = min(self.closest_waypoint_index + self.LOOKAHEAD_WPS - 1, len(self.base_waypoints_original))
+            waypoints_list = self.base_waypoints_original[self.closest_waypoint_index: end_idx]
 
         # Step 4: Publish waypoints
         self.final_waypoints = waypoints_list
         self.publish()
+
         pass
 
     def get_closest_waypoint_front(self, current_pose, waypoints):
@@ -154,6 +163,7 @@ class WaypointUpdater(object):
 
     def waypoints_cb(self, waypoints):
         # TODO: Implement
+        self.base_waypoints_original = waypoints.waypoints
         self.base_waypoints = waypoints.waypoints
         pass
 
