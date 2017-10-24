@@ -42,12 +42,12 @@ class Controller(object):
 
         linear_error = proposed_linear - cur_linear
 
-        print(proposed_linear, proposed_angular, cur_linear, linear_error)
-        print("linear_error", linear_error, "sample_time", sample_time);
+        #print("proposed_linear", proposed_linear, "current_linear", cur_linear)
+        #print("linear_error", linear_error, "sample_time", sample_time);
         throttle = self.pid.step(linear_error, sample_time)
-        print("throttle after pid", throttle)
+        #print("throttle after pid", throttle)
         throttle = self.lpf.filt(throttle)
-        print("throttle after lowpass", throttle)
+        #print("throttle after lowpass", throttle)
 
         brake = 0.0
         if throttle < 0.0:
