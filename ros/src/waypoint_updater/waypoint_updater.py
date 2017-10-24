@@ -47,7 +47,7 @@ class WaypointUpdater(object):
 
         self.current_pose = 0
         self.base_waypoints_original = []
-		self.base_waypoints = []
+        self.base_waypoints = []
         self.final_waypoints = []
         self.closest_waypoint_index = 0
         self.traffic_waypoint_index = 2147483647
