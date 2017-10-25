@@ -223,7 +223,7 @@ class TLDetector(object):
 
         light_distance = self.distance_light(light, self.waypoints[self.last_car_position].pose.pose.position)
 
-        search_for_light_distance = 50
+        search_for_light_distance = 15
         if light:
             if light_distance >= search_for_light_distance:
                 return -1, TrafficLight.UNKNOWN
