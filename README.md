@@ -1,6 +1,6 @@
 # Team SmartBlocks Capstone Project 
 
-The video below demonstrates our project in action. The car stops at the red light and wait for it to turn green before cross the intersection.
+The video below demonstrates our project in action. The car stops at the red light and wait for it to turn green before crossing the intersection.
 
 <p align=center>
 	<img src=imgs/carnd_capstone.gif/>
@@ -42,7 +42,7 @@ If a red light is encountered, the waypoint_updater node will gradually reduce t
 
 One important part of the self-driving is to detect and classify upcoming traffic lights. The system processes images provided by car-mounted camera, figure out the information of the nearest traffic light,including location and color, and publish upcoming traffic light information to ```traffic_waypoint``` topic. 
 
-The actual detection is done by passing the images through a convolution neural network that is trained using the labeled images of traffic light states from the simulator. The network was trained using the object detection API of the tensorflow. We used faster-RCNN as our based model pre-trained on COCO dataset.
+The actual detection is done by passing the images through a convolution neural network that is trained using the labeled images of traffic light states from the simulator. The network was trained using the object detection API of the tensorflow. We used faster-RCNN as our based model pre-trained on COCO dataset.	
 
 <p align=center>
 	<img src='./imgs/tl1.png'>
