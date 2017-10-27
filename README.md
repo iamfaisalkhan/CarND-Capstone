@@ -1,69 +1,69 @@
-This is the project repo for the final project of the Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
+# Team SmartBlocks Capstone Project 
 
-### Native Installation
+The final project for Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. 
 
-* Be sure that your workstation is running Ubuntu 16.04 Xenial Xerus or Ubuntu 14.04 Trusty Tahir. [Ubuntu downloads can be found here](https://www.ubuntu.com/download/desktop).
-* If using a Virtual Machine to install Ubuntu, use the following configuration as minimum:
-  * 2 CPU
-  * 2 GB system memory
-  * 25 GB of free hard drive space
+#![Demo](imgs/carnd_capstone.gif  "Final Result")
 
-  The Udacity provided virtual machine has ROS and Dataspeed DBW already installed, so you can skip the next two steps if you are using this.
+## Goals
 
-* Follow these instructions to install ROS
-  * [ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) if you have Ubuntu 16.04.
-  * [ROS Indigo](http://wiki.ros.org/indigo/Installation/Ubuntu) if you have Ubuntu 14.04.
-* [Dataspeed DBW](https://bitbucket.org/DataspeedInc/dbw_mkz_ros)
-  * Use this option to install the SDK on a workstation that already has ROS installed: [One Line SDK Install (binary)](https://bitbucket.org/DataspeedInc/dbw_mkz_ros/src/81e63fcc335d7b64139d7482017d6a97b405e250/ROS_SETUP.md?fileviewer=file-view-default)
-* Download the [Udacity Simulator](https://github.com/udacity/CarND-Capstone/releases/tag/v1.2).
+The project focused on integrating different components of a self driving car using [ROS](http://www.ros.org/) (Robot Operating System). In particular, we implemented a waypoint updater module that 
 
-### Docker Installation
-[Install Docker](https://docs.docker.com/engine/installation/)
+## Team
 
-Build the docker container
-```bash
-docker build . -t capstone
-```
 
-Run the docker file
-```bash
-docker run -p 127.0.0.1:4567:4567 -v $PWD:/capstone -v /tmp/log:/root/.ros/ --rm -it capstone
-```
+| Name        |Email           | Linked-In  |
+| ------------- |-------------| -----|
+| Faisal Khan |    faisal.nust@gmail.com | https://www.linkedin.com/in/faisalkhan83/ |
+| Rowen Wang      | wangjl_sdu@hotmail.com      |  https://www.linkedin.com/in/rowenw/ |
+| Stephen Horton |stevehorton47@gmail.com     |     |
+| Sundeep Tuteja | sundeeptuteja@gmail.com|https://www.linkedin.com/in/sundeep-t-2b26747/|
+|Tiezheng Zhao |zhaotzheng@gmail.com|http://www.linkedin.com/in/tiezhengzhao|
 
-### Usage
 
-1. Clone the project repository
-```bash
-git clone https://github.com/udacity/CarND-Capstone.git
-```
+## Waypoint Updater
 
-2. Install python dependencies
-```bash
-cd CarND-Capstone
-pip install -r requirements.txt
-```
-3. Make and run styx
-```bash
-cd ros
-catkin_make
-source devel/setup.sh
-roslaunch launch/styx.launch
-```
-4. Run the simulator
+The waypoint_updater node is responsible for providing desired waypoint information to the waypoint_follower node while considering the positions of red traffic lights, and, possibly, obstacles. This information incorporates both pose (position + orientation) and desired velocity information. The waypoint_updater node subscribes to the /current_pose and /base_waypoints topics, and publishes to topic final_waypoints.
 
-### Real world testing
-1. Download [training bag](https://drive.google.com/file/d/0B2_h37bMVw3iYkdJTlRSUlJIamM/view?usp=sharing) that was recorded on the Udacity self-driving car (a bag demonstraing the correct predictions in autonomous mode can be found [here](https://drive.google.com/open?id=0B2_h37bMVw3iT0ZEdlF4N01QbHc))
-2. Unzip the file
-```bash
-unzip traffic_light_bag_files.zip
-```
-3. Play the bag file
-```bash
-rosbag play -l traffic_light_bag_files/loop_with_traffic_light.bag
-```
-4. Launch your project in site mode
-```bash
-cd CarND-Capstone/ros
-roslaunch launch/site.launch
-```
-5. Confirm that traffic light detection works on real life images
+The node sets one parameter called PREFERRED_STOPPING_DISTANCE, which allows the user to calibrate the distance from the stopline for a red light at which deceleration should start. The default value is 10.0 meters.
+
+It sets another parameter called LOOKAHEAD_WPS, set to 200 by default. This parameter contains the maximum number of waypoints to be published to topic /final_waypoints.
+
+If no red light is visible, this node will simply transmit a specified number of waypoints ahead of the vehicle itself. In order to achieve this, it first computes the index of the closest waypoint, and publishes the position and velocity information of the specified number of waypoints in front of this closest waypoint.
+
+If a red light is encountered, the waypoint_updater node will gradually reduce the velocities using a linear function (although other functions are possible, and may be more representative of realistic driving conditions), such that the vehicle velocity at the stopline is 0.0 m/s. It also sets the velocities of several waypoints ahead to 0.0 m/s, to increase the chances of a full stop. The reduction in velocities take place at a specified distance away from the red light.
+
+
+## Traffic Light Detection
+
+
+## Drive by wire
+
+Dbw_node subscribes from three topic /vehicle/dbw_enabled, /twist_cmd and /current_velocity. /vehicle/dbw_enabled tells whether the car is controlled by dbw_node or not. /twist_cmd tells proposed linear and yaw velocity by waypoints_updater. /current_velocity tells the car's current linear and yaw velocity. What dbw_node is trying to do is to generate throttle, brake and steer command and publish them to the vehicle.
+
+throttle and brake are generated by PID controller, LowPass filter is used to smooth throttle and brake, preventing jerks. Detail would be decribed at a separate parts about PID and LowPass filter.
+
+steer command is generated with the help of yaw_controller provided by udacity in start repo.
+
+As to code part, dbw_node.py was collecting data from subscribed topic and publishing throttle/brake/steer command to vehicle. twist_controller.py was the main file processing the controlling logic. pid.py, lowpass.py and yaw_controller.py was provided by udacity for PID controller, LowPass filter and steer command.
+
+### PID Controller
+
+Code in pid.py was not changed at all. Appropriate parameters was used to create PID controller. In our implementation, we use kp=0.7, ki=0.0007 and kd=0.1.
+
+At the beginning, the parameters was chosen based on the following prior knowledge,
+
+kp controls current error, the car should fix current error in time, so a big value for kp should be reasonable. We want the throttle to be 1.0 if the current error is bigger than 2m/s. So values from 0.5~1.0 would be good.
+
+ki controls cumulated errors, we want to fix the cumulated error but a reasonable long time would be ok, so a small value was chosen.
+
+kd controls differential value of errors, with a reasonable big values would prevent jerks, but should not exceed kp because current error always plays the important role.
+
+At the second phase, we tuned the parameters to make the car stop and move in time.
+
+### LowPass Filter
+
+LowPass filter was used to smooth throttle and brake values. We managed to use 2/3 current value and 1/3 previous values by setting ts=0.2 and tau=0.1. The values works well with simulator.
+
+
+
+
