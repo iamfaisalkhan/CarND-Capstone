@@ -36,7 +36,9 @@ class TLDetector(object):
         rely on the position of the light and the camera image to predict it.
         '''
         sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
-        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb)
+
+        camera_string = rospy.get_param("/camera_topic")
+        sub6 = rospy.Subscriber(camera_string, Image, self.image_cb)
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
@@ -203,6 +205,8 @@ class TLDetector(object):
         for i in range(len(stop_line_positions)):
             light_pos = self.get_closest_waypoint_light(self.waypoints, stop_line_positions[i])
             light_waypoint_pos.append(light_pos)
+            print ("light pos", light_pos)
+
 
         self.last_light_pos_wp = light_waypoint_pos
 
@@ -210,6 +214,8 @@ class TLDetector(object):
             car_position = self.get_closest_waypoint(self.pose.pose)
             if car_position is not None:
                 self.last_car_position = car_position
+        else:
+            return -1, TrafficLight.UNKNOWN
 
         if self.last_car_position > max(self.last_light_pos_wp):
             light_num_wp = min(self.last_light_pos_wp)
@@ -221,8 +227,10 @@ class TLDetector(object):
         light_ind = self.last_light_pos_wp.index(light_num_wp)
         light = stop_line_positions[light_ind]
 
+        print ("Last car pos ", self.last_car_position)
         light_distance = self.distance_light(light, self.waypoints[self.last_car_position].pose.pose.position)
 
+        print ("Distance to light --- ", light_distance)
         search_for_light_distance = 15
         if light:
             if light_distance >= search_for_light_distance:

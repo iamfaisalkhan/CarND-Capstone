@@ -16,7 +16,7 @@ from object_detection.utils import dataset_util
 
 flags = tf.app.flags
 
-flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
+flags.DEFINE_string('output_path', 'out.record', 'Path to output TFRecord')
 flags.DEFINE_string('annotation_file', '', 'Path to annotation file')
 flags.DEFINE_string('data_folder', '', 'Path to data folder')
 flags.DEFINE_integer('image_height', 600, 'Height of the image')
@@ -91,7 +91,7 @@ def main(_):
     samples = yaml.load(open(yaml_file, 'rb').read())
     
     for sample in samples:
-        sample['filename'] = '%s%s'%(data_folder, os.path.basename(sample['filename']))
+        sample['filename'] = '%s%s'%(data_folder, sample['filename'])
         tf_example = create_tf_example(sample)
         writer.write(tf_example.SerializeToString())
 

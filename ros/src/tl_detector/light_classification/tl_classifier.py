@@ -43,7 +43,7 @@ class TLClassifier(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-
+        print("Dtype of image", np.dtype(image))
         image_exp = np.expand_dims(image, axis=0)
         (boxes, scores, classes, num) = self.session.run(
             [self.detection_boxes, self.detection_scores, self.detection_classes, self.num_detections],
