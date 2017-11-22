@@ -227,7 +227,7 @@ class TLDetector(object):
         else:
             light_delta = self.last_light_pos_wp[:]
             light_delta[:] = [x - self.last_car_position for x in light_delta]
-            light_num_wp = min(i for i in light_delta if i > 0) + self.last_car_position
+            light_num_wp = min(i for i in light_delta if i >= 0) + self.last_car_position
 
         light_ind = self.last_light_pos_wp.index(light_num_wp)
         light = stop_line_positions[light_ind]
@@ -236,7 +236,8 @@ class TLDetector(object):
         light_distance = self.distance_light(light, self.waypoints[self.last_car_position].pose.pose.position)
 
         print ("Distance to light --- ", light_distance)
-        search_for_light_distance = 15
+        search_for_light_distance = 5
+        
         if light:
             if light_distance >= search_for_light_distance:
                 return -1, TrafficLight.UNKNOWN
