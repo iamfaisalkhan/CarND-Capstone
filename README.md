@@ -88,5 +88,3 @@ LowPass filter was used to smooth ```throttle``` and ```brake``` values. We mana
 ---
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/6IbyqjLUKMM/0.jpg)](https://www.youtube.com/watch?v=6IbyqjLUKMM)
 
-
-
