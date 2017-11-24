@@ -88,17 +88,21 @@ class TLDetector(object):
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
+
+        if light_wp == -1:
+            self.state_count = 0
+            return
+
         if self.state != state:
             self.state_count = 0
             self.state = state
         elif self.state_count >= STATE_COUNT_THRESHOLD:
             self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else (len(self.waypoints) + 1)
             self.last_wp = light_wp
+            if state == TrafficLight.GREEN:
+                light_wp = len(self.waypoints) + 1                
             self.upcoming_red_light_pub.publish(Int32(light_wp))
-        else:
-            self.upcoming_red_light_pub.publish(Int32(self.last_wp))
-
+        
         self.state_count += 1
 
     def distance(self, pos1, pos2):
@@ -237,7 +241,7 @@ class TLDetector(object):
 
         print ("Distance to light --- ", light_distance)
         search_for_light_distance = 5
-        
+
         if light:
             if light_distance >= search_for_light_distance:
                 return -1, TrafficLight.UNKNOWN
